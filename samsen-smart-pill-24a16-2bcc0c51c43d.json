@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "samsen-smart-pill-24a16",
+  "private_key_id": "2bcc0c51c43d63a93bd6a0ae5cd46ffb8cbcea8c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC9V0P5tmZ0rlCN\n2xooL4HdsEo+bnQM5zxxJEotOz1pjHQl6sxP7+Yny0HIIziVCVsMs/Xar1EJ1fm+\nGY7ZTtZHlNFDgB7vjpkfgU1sqbNA8gOFVuZw2020Ui4hq251hlxDc3+aS6ulBVUW\nS+3Y+t9hPW33H4aSBppKX5Q/v6DQuZhNNOHmbAlsJP+Z47pEtJWHemXBN9UcA7zV\nOggsnrtgqLDxL8tcdDRecsAoT/U+nPC11Z1QlghTc8tc3RY6w/PzUP8X/JFA7ULH\nyy7rBK4cH/NbSfEZ/92F1JYGEgG9lcdeFlPr0348F04WqlUj2GQYH6j/oL3vCpb4\nUF+rAC9vAgMBAAECggEAHYTg7qoe0BsrKOqbad96Pj9RW+lpg2d7t2IChInDWdTR\neOXh46aRueuI/nRrSmUSgmj+MBF8L23iSV5/tGaDptZPR9hOOmf/fHdyxDmy3jG9\nFclGFRtDwpS7Z3lsN7tyX/u+TaZ1hL1PljHRS65VLDphDhGmr9aCsIy1NrkgD9pS\n1OHCN93BNGEvqSDQOmaOvnIv6YA3zYIKrnCYoEVRsKkGhzm7emhhkxpKeQZT6uZ/\ncjPZskCcbEppSiUpBCRFjAT46ruGQ4Ud7EuQRo9b0Tyc+dJ5GkYThAY4GZou77zo\nKlEza6ML1jQizSJzV2PBDcjlDDOhUv/wZjrxavasiQKBgQDrRQQN2SEl157++f5T\n42YZHNHbqJUT5vJe3VpGBX+slkdOmVSp2CxSBR5JiyimVj5sdOX4+BAawuujkGK9\nBUtqe4rFF2KdmDVirt9i+390coOx9sAB/DCW4XnFDG++YmcfoK2D06zb7QINfCso\nVWPrQpYVEv4HNHrWuEarJpOENwKBgQDOBjvzRHOweh4/mukpanHMJ3zL/7PltPPl\nx5YFDZqnw8KuRCf7cSrVUhrcIQkrH5SDnBdrXjcpvJub08hg3j87OeZ/w1Spgexq\n0R0XNd8jbH2FJKmHxUxX8KQ5eMGOT3KoNdcC9c0gIQ686ElR3eyP8koUersarsEG\nNk7XQioCiQKBgQDesqaCwTv6SR7sdhECsSaMsNYI2Yu7mglkOJzh2QSghmObB9K3\nLrPNM6EWtk3VHZ/bI9AoGg+MdWN9oQeFqsRXV/fkVh131YL7FVLIrA1aWadFRq87\ncc9Aks+j8QC5MwYwTvTP6wcd6jveLeHgPOvm3lGYQzEH+uon46ipC0vpgwKBgQDI\nxKh9SxKWQprhjttyoaldsolZ3sf3rJwVKqcWK4ivvgQkgISZ8lE0anuEUqk1nePD\nUUQ9PCXzhTn646ocQ9hIpgbqMHZ7bQHvofKAYN4fDiVPr0eJ6ImaFQZkfznXrbJl\nG3p5BwGrMqvDCXYR0nsqV4k7ZdKZkPzHSfsQqAh6SQKBgQDhfbwjXrU+3QdAjegf\niqYAGdZKvWp/AlmebBgxVwEOmivS+NlFz8mVpldN4rgobQFx6FrGYJhkI+oEu1oV\nbboP278k59CIwYyCMyIRGiDYuFi69qvrDh0dxJYmO/x9AF4BXNw7pgLioq1JAGDN\nyiASa9h9hlsXfTOlLETdMdldmQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-u2oxh@samsen-smart-pill-24a16.iam.gserviceaccount.com",
+  "client_id": "102810649019242269400",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-u2oxh%40samsen-smart-pill-24a16.iam.gserviceaccount.com"
+}
