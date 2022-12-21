@@ -2,8 +2,10 @@ import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app
 import datetime,time
 import pytz
-import cv2
+from PIL import Image
 import numpy as np
+import tensorflow.compat.v1 as tf
+
 
 utc=pytz.UTC
 timezone = pytz.timezone('Asia/Bangkok')
@@ -61,6 +63,52 @@ def main_function(psc_info_ref):
                 st.session_state.stage="add_psc"
                 st.experimental_rerun()  
             
+
+def run_inference_for_single_image(image, graph):
+  with graph.as_default():
+    with tf.Session() as sess:
+      # Get handles to input and output tensors
+      ops = tf.get_default_graph().get_operations()
+      all_tensor_names = {output.name for op in ops for output in op.outputs}
+      tensor_dict = {}
+      for key in [
+          'num_detections', 'detection_boxes', 'detection_scores',
+          'detection_classes', 'detection_masks'
+      ]:
+        tensor_name = key + ':0'
+        if tensor_name in all_tensor_names:
+          tensor_dict[key] = tf.get_default_graph().get_tensor_by_name(
+              tensor_name)
+      if 'detection_masks' in tensor_dict:
+        # The following processing is only for single image
+        detection_boxes = tf.squeeze(tensor_dict['detection_boxes'], [0])
+        detection_masks = tf.squeeze(tensor_dict['detection_masks'], [0])
+        # Reframe is required to translate mask from box coordinates to image coordinates and fit the image size.
+        real_num_detection = tf.cast(tensor_dict['num_detections'][0], tf.int32)
+        detection_boxes = tf.slice(detection_boxes, [0, 0], [real_num_detection, -1])
+        detection_masks = tf.slice(detection_masks, [0, 0, 0], [real_num_detection, -1, -1])
+        detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(
+            detection_masks, detection_boxes, image.shape[0], image.shape[1])
+        detection_masks_reframed = tf.cast(
+            tf.greater(detection_masks_reframed, 0.5), tf.uint8)
+        # Follow the convention by adding back the batch dimension
+        tensor_dict['detection_masks'] = tf.expand_dims(
+            detection_masks_reframed, 0)
+      image_tensor = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
+
+      # Run inference
+      output_dict = sess.run(tensor_dict,
+                             feed_dict={image_tensor: np.expand_dims(image, 0)})
+
+      # all outputs are float32 numpy arrays, so convert types as appropriate
+      output_dict['num_detections'] = int(output_dict['num_detections'][0])
+      output_dict['detection_classes'] = output_dict[
+          'detection_classes'][0].astype(np.uint8)
+      output_dict['detection_boxes'] = output_dict['detection_boxes'][0]
+      output_dict['detection_scores'] = output_dict['detection_scores'][0]
+      if 'detection_masks' in output_dict:
+        output_dict['detection_masks'] = output_dict['detection_masks'][0]
+  return output_dict
 
 
 # Create the login form
@@ -145,11 +193,12 @@ def add_data(user_ref):
 
         img_file_buffer = st.camera_input("ถ่ายรูปยาที่จะกิน")
         if img_file_buffer is not None:
-            # To read image file buffer with OpenCV:
-            bytes_data = img_file_buffer.getvalue()
-            cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-            st.write(type(cv2_img))
-            numOfPill=2
+            image = Image.open(img_file_buffer)
+            (im_width, im_height) = image.size
+            image_np = np.array(image.getdata()).reshape((im_height, im_width, 3)).astype(np.uint8)
+            output_dict = run_inference_for_single_image(image_np, detection_graph)
+            numOfPill=output_dict['num_detections']
+            st.write(numOfPill)
         submitted = st.form_submit_button("ยืนยัน") 
     st.session_state.numpill=numOfPill
 
@@ -180,28 +229,36 @@ def done(psc_info_ref):
     st.title("ส่งสำเร็จ")
     if st.session_state.full:
         st.write("มื้อนี้กินยาครบตามจำนวน")
+        complete=st.session_state.progess[0]
+        total=st.session_state.progess[1]
+        p1=round(complete/total*100)
+        p2=round((complete+1)/total*100)
+        p_bar = st.progress(p1)
+
+        for percent_complete in range(p1,p2):
+            time.sleep(0.01)
+            p_bar.progress(percent_complete + 1)
+            
     else:
         st.write("มื้อนี้กินไม่ยาครบ")
         st.write(f"ต้องกิน:{unitPer1} พบ:{st.session_state.numpill}")
-    complete=st.session_state.progess[0]
-    total=st.session_state.progess[1]
-    p1=round(complete/total*100)
-    p2=round((complete+1)/total*100)
 
-    st.write(p1)
-    st.write(p2)
-
-    p_bar = st.progress(p1)
-
-    for percent_complete in range(p1,p2):
-        time.sleep(0.01)
-        p_bar.progress(percent_complete + 1)
     if st.button("กลับหน้าหลัก"):
         st.session_state.stage="main" 
         st.experimental_rerun()
     if st.button("ส่งใหม่"):
         st.session_state.stage="add_data" 
         st.experimental_rerun()
+
+detection_graph = tf.Graph()
+with detection_graph.as_default():
+  od_graph_def = tf.GraphDef()
+  # Open the file in binary mode
+  with open("frozen_inference_graph.pb", "rb") as fid:
+    # Read the contents of the file
+    serialized_graph = fid.read()
+    od_graph_def.ParseFromString(serialized_graph)
+    tf.import_graph_def(od_graph_def, name='')
 
 
 if not st.session_state.logedIn:
