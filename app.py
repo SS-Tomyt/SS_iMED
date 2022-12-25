@@ -31,7 +31,6 @@ if 'full' not in st.session_state: st.session_state.full=False
 if 'numpill' not in st.session_state: st.session_state.numpill=0
 if st.session_state.username_!="":st.session_state.username=st.session_state.username_
 username=st.session_state.username
-st.write(st.session_state)
 def main_function(psc_info_ref):
     #get data and change to python dic
     psc_info = psc_info_ref.get()
@@ -51,8 +50,13 @@ def main_function(psc_info_ref):
         st.session_state.progess=[complete,total]
 
         with st.expander("**คุณมียาที่ต้องกิน**", expanded=True):
-            st.write(f"#### ส่งข้อมูลการกินยา")
-            st.write(f"ช่วงวันที่: {asingn_date[0].date()} - {asingn_date[1].date()}")
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(f"#### ส่งข้อมูลการกินยา")
+                st.write(f"ช่วงวันที่: {asingn_date[0].date()} - {asingn_date[1].date()}")
+            with col2:
+                image = Image.open(f'item/{round(complete/total*4)+1}.png')
+                st.image(image)
             st.progress(round(complete/total*100))
             if st.button("ส่งข้อมูลการกินยา"):
                 st.session_state.stage="add_data"
@@ -114,7 +118,7 @@ def run_inference_for_single_image(image, graph):
 # Create the login form
 def login():
     with st.form("login"):
-        st.title("Samsen Smart pill", anchor=None)
+        st.title("SAMSEN iMED", anchor=None)
         st.subheader("กรุณาเข้าสู่ระบบ", anchor=None)
         p_username = st.text_input('ชื่อผู้ใช้:',key="username")
         password = st.text_input('รหัสผ่าน:', type='password')
@@ -142,7 +146,7 @@ def login():
 
 def add_prescription(psc_info_ref):
     with st.form("addPres"):
-        st.title("Samsen Smart pill", anchor=None)
+        st.title("SAMSEN iMED", anchor=None)
         st.subheader("กรุณากรอกข้อมูลยา", anchor=None)
         # medic_name = st.text_input('ชื่อยา(ปริมาณ):')
         units_per_dose = st.number_input('จำนวนเม็ดต่อครั้ง:')
@@ -196,12 +200,23 @@ def add_data(user_ref):
             image = Image.open(img_file_buffer)
             (im_width, im_height) = image.size
             image_np = np.array(image.getdata()).reshape((im_height, im_width, 3)).astype(np.uint8)
-            output_dict = run_inference_for_single_image(image_np, detection_graph)
-            numOfPill=output_dict['num_detections']
             st.write(numOfPill)
         submitted = st.form_submit_button("ยืนยัน") 
     st.session_state.numpill=numOfPill
+    
+    detection_graph = tf.Graph()
+    with detection_graph.as_default():
+        od_graph_def = tf.GraphDef()
+        # Open the file in binary mode
+        with open("frozen_inference_graph.pb", "rb") as fid:
+            # Read the contents of the file
+            serialized_graph = fid.read()
+            od_graph_def.ParseFromString(serialized_graph)
+            tf.import_graph_def(od_graph_def, name='')
+    output_dict = run_inference_for_single_image(image_np, detection_graph)
+    numOfPill=output_dict['num_detections']
 
+    
     #Check it is complete
     if numOfPill== psc_info_data["unitPer1"] and meal in psc_info_data["mealPreDay"]:
         full=True
@@ -228,11 +243,16 @@ def done(psc_info_ref):
     unitPer1=psc_info_data["unitPer1"]
     st.title("ส่งสำเร็จ")
     if st.session_state.full:
-        st.write("มื้อนี้กินยาครบตามจำนวน")
+        col1, col2 = st.columns([3, 1])
+        col1.write("มื้อนี้กินยาครบตามจำนวน")
+        st.write(round(complete/total*4)+1)
+        image = Image.open(f'item/{round(complete/total*4)+1}.png')        
+        col2.image(image)
         complete=st.session_state.progess[0]
         total=st.session_state.progess[1]
         p1=round(complete/total*100)
         p2=round((complete+1)/total*100)
+
         p_bar = st.progress(p1)
 
         for percent_complete in range(p1,p2):
@@ -250,15 +270,7 @@ def done(psc_info_ref):
         st.session_state.stage="add_data" 
         st.experimental_rerun()
 
-detection_graph = tf.Graph()
-with detection_graph.as_default():
-  od_graph_def = tf.GraphDef()
-  # Open the file in binary mode
-  with open("frozen_inference_graph.pb", "rb") as fid:
-    # Read the contents of the file
-    serialized_graph = fid.read()
-    od_graph_def.ParseFromString(serialized_graph)
-    tf.import_graph_def(od_graph_def, name='')
+
 
 
 if not st.session_state.logedIn:
